@@ -1,0 +1,393 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Book, 
+  BookOpen, 
+  Settings, 
+  Moon, 
+  Sun, 
+  Type, 
+  ChevronLeft, 
+  ChevronRight, 
+  Home,
+  Bookmark,
+  Search,
+  Menu,
+  X,
+  Star,
+  Clock,
+  Heart
+} from 'lucide-react';
+
+// Data Novel yang Aman, Edukatif, dan Romantis Remaja (Sopan)
+const NOVELS_DATA = [
+  {
+    id: 1,
+    title: "Petualangan Tim Elang",
+    author: "Budi Santoso",
+    cover: "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&q=80&w=400",
+    genre: "Petualangan",
+    rating: 4.8,
+    description: "Kisah sekelompok pramuka yang belajar tentang kerja sama tim dan keberanian saat mereka tersesat di hutan pinus yang indah.",
+    chapters: [
+      { id: 1, title: "Bab 1: Rencana Berkemah", content: "Pagi itu sangat cerah. Di halaman sekolah, tim Elang sedang sibuk mengecek perlengkapan mereka. 'Pastikan kompas dan peta sudah masuk ke tas,' ujar Andi dengan penuh semangat." }
+    ]
+  },
+  {
+    id: 2,
+    title: "Cita-cita di Atas Awan",
+    author: "Larasati Putri",
+    cover: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80&w=400",
+    genre: "Inspiratif",
+    rating: 4.9,
+    description: "Perjuangan seorang anak desa yang bermimpi menjadi insinyur pesawat terbang. Sebuah kisah tentang ketekunan dan belajar keras.",
+    chapters: [
+      { id: 1, title: "Bab 1: Pesawat Kertas", content: "Hani selalu menatap langit setiap kali mendengar deru mesin pesawat. Di tangannya, sebuah pesawat kertas terbang meluncur indah." }
+    ]
+  },
+  {
+    id: 4,
+    title: "Melodi di Balik Jendela",
+    author: "Siska Amelia",
+    cover: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&q=80&w=400",
+    genre: "Romansa",
+    rating: 4.8,
+    description: "Raka, seorang pemain biola yang pemalu, selalu mendengarkan petikan gitar dari rumah sebelah. Kisah manis tentang musik yang menyatukan dua hati.",
+    chapters: [
+      { id: 1, title: "Bab 1: Nada yang Sama", content: "Sore itu, Raka sedang menyetem biolanya ketika mendengar denting gitar dari rumah sebelah. Iramanya terasa familiar." }
+    ]
+  },
+  {
+    id: 6,
+    title: "Ketua OSIS & Sang Juara Kelas",
+    author: "Maya Lestari",
+    cover: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=400",
+    genre: "Romansa SMA",
+    rating: 4.9,
+    description: "Fajar adalah ketua OSIS yang sibuk, sementara Ghea adalah siswi terpintar di SMA Nusantara. Persaingan meraih beasiswa luar negeri malah membuat mereka belajar arti dukungan dan kasih sayang yang tulus.",
+    chapters: [
+      { id: 1, title: "Bab 1: Debat di Perpustakaan", content: "Suasana perpustakaan sore itu sangat tenang sampai Fajar dan Ghea berdebat soal proposal kegiatan sekolah. 'Ini bukan soal siapa yang menang, Ghea, tapi soal apa yang terbaik buat siswa,' ujar Fajar tenang. Ghea tertegun, baru kali ini ada yang berani membantah argumennya dengan begitu lembut." }
+    ]
+  },
+  {
+    id: 7,
+    title: "Basket dan Puisi Cinta",
+    author: "Aris Pratama",
+    cover: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&q=80&w=400",
+    genre: "Romansa SMA",
+    rating: 4.7,
+    description: "Dimas sang kapten basket diam-diam suka menulis puisi di buku catatan usangnya. Ketika buku itu tanpa sengaja ditemukan oleh Laras, sang jurnalis sekolah, dimulailah kisah manis penuh teka-teki.",
+    chapters: [
+      { id: 1, title: "Bab 1: Buku yang Tertinggal", content: "Laras menemukan buku bersampul cokelat di bangku pinggir lapangan basket. Di dalamnya terdapat tulisan tangan yang sangat rapi. 'Untuk seseorang yang selalu menyemangatiku dari bangku penonton'. Laras mendongak, melihat Dimas sedang melakukan slam dunk dengan hebatnya." }
+    ]
+  },
+  {
+    id: 8,
+    title: "Sketsa di Kelas Seni",
+    author: "Vina Anggraini",
+    cover: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=400",
+    genre: "Romansa SMA",
+    rating: 4.8,
+    description: "Kisah tentang seorang siswi yang hobi menggambar sketsa diam-diam dan seorang murid pindahan yang menjadi model lukisan pertamanya tanpa sengaja.",
+    chapters: [
+      { id: 1, title: "Bab 1: Garis Pertama", content: "Eno, murid pindahan baru, duduk di pojok kelas seni. Dari kejauhan, tangan Keysha lincah menarik garis di kertas gambar. Ia tidak sadar bahwa wajah Eno telah memenuhi kanvasnya." }
+    ]
+  }
+];
+
+const App = () => {
+  const [view, setView] = useState('library'); 
+  const [selectedNovel, setSelectedNovel] = useState(null);
+  const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
+  const [darkMode, setDarkMode] = useState(false);
+  const [fontSize, setFontSize] = useState('text-base');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    document.body.className = darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900';
+  }, [darkMode]);
+
+  const goToNovel = (novel) => {
+    setSelectedNovel(novel);
+    setView('details');
+    window.scrollTo(0, 0);
+  };
+
+  const startReading = (novel, chapterIdx = 0) => {
+    setSelectedNovel(novel);
+    setCurrentChapterIndex(chapterIdx);
+    setView('reader');
+    window.scrollTo(0, 0);
+  };
+
+  const nextChapter = () => {
+    if (currentChapterIndex < selectedNovel.chapters.length - 1) {
+      setCurrentChapterIndex(currentChapterIndex + 1);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const prevChapter = () => {
+    if (currentChapterIndex > 0) {
+      setCurrentChapterIndex(currentChapterIndex - 1);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const Navbar = () => (
+    <nav className={`sticky top-0 z-50 p-4 border-b flex justify-between items-center transition-colors duration-300 ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-800 shadow-sm'}`}>
+      <div className="flex items-center gap-2 cursor-pointer group" onClick={() => setView('library')}>
+        <div className="bg-blue-500 p-2 rounded-lg text-white group-hover:rotate-12 transition-transform shadow-md">
+          <BookOpen size={20} />
+        </div>
+        <span className="font-bold text-xl tracking-tight italic">Novel<span className="text-blue-500">Ku</span></span>
+      </div>
+      <div className="flex items-center gap-2">
+        <button onClick={() => setDarkMode(!darkMode)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+          {darkMode ? <Sun size={20} className="text-yellow-400" /> : <Moon size={20} className="text-blue-600" />}
+        </button>
+        <button className="md:hidden p-2" onClick={() => setSidebarOpen(true)}>
+          <Menu size={24} />
+        </button>
+      </div>
+    </nav>
+  );
+
+  const LibraryView = () => (
+    <div className="p-4 md:p-8 max-w-7xl mx-auto">
+      <div className="mb-10 text-center md:text-left">
+        <h2 className="text-3xl font-extrabold flex items-center justify-center md:justify-start gap-2 mb-2">
+          <Star className="text-yellow-500 fill-yellow-500" size={28} /> Koleksi Terpilih
+        </h2>
+        <p className="opacity-60 text-lg">Kisah SMA, petualangan, dan inspirasi masa muda yang positif.</p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        {NOVELS_DATA.map((novel) => (
+          <div 
+            key={novel.id} 
+            className={`group flex flex-col cursor-pointer rounded-3xl overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-1 ${darkMode ? 'bg-gray-800' : 'bg-white shadow-lg shadow-blue-500/5'}`}
+            onClick={() => goToNovel(novel)}
+          >
+            <div className="relative overflow-hidden h-56">
+              <img src={novel.cover} alt={novel.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              <div className={`absolute top-4 left-4 px-4 py-1.5 text-white text-xs font-bold rounded-full shadow-lg ${novel.genre.includes('Romansa') ? 'bg-pink-500' : 'bg-blue-500'}`}>
+                {novel.genre.includes('Romansa') ? <Heart size={12} className="inline mr-1 fill-white" /> : null}
+                {novel.genre}
+              </div>
+            </div>
+            <div className="p-6 flex-1 flex flex-col">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-bold text-xl leading-tight line-clamp-1 group-hover:text-blue-500 transition-colors">{novel.title}</h3>
+                <div className="flex items-center gap-1 text-yellow-500 text-sm font-bold bg-yellow-50 dark:bg-yellow-900/20 px-2 py-0.5 rounded-lg">
+                  <Star size={14} className="fill-yellow-500" /> {novel.rating}
+                </div>
+              </div>
+              <p className="text-sm opacity-60 mb-4 italic">Oleh {novel.author}</p>
+              <p className="text-sm line-clamp-2 opacity-80 mb-6 flex-1 leading-relaxed">{novel.description}</p>
+              <button className="w-full py-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-2xl font-bold text-sm hover:bg-blue-600 hover:text-white transition-all">
+                Mulai Membaca
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const DetailView = () => (
+    <div className="p-4 md:p-8 max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <button onClick={() => setView('library')} className="flex items-center gap-2 mb-8 font-bold text-blue-500 hover:opacity-70 transition-all">
+        <ChevronLeft size={24} /> Kembali ke Beranda
+      </button>
+      
+      <div className="flex flex-col md:flex-row gap-10 bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] shadow-xl shadow-blue-500/5">
+        <div className="relative shrink-0">
+           <img src={selectedNovel.cover} alt={selectedNovel.title} className="w-full md:w-64 h-[24rem] object-cover rounded-[2rem] shadow-2xl" />
+           {selectedNovel.genre.includes('Romansa') && (
+             <div className="absolute -top-4 -right-4 bg-pink-500 text-white p-3 rounded-full shadow-lg border-4 border-white dark:border-gray-800">
+                <Heart size={24} className="fill-white" />
+             </div>
+           )}
+        </div>
+        <div className="flex-1 flex flex-col justify-center">
+          <h1 className="text-4xl font-extrabold mb-3 leading-tight">{selectedNovel.title}</h1>
+          <p className="text-xl text-blue-500 font-semibold mb-6">Penulis: {selectedNovel.author}</p>
+          <div className="flex flex-wrap gap-4 mb-8">
+            <span className={`flex items-center gap-1 px-5 py-2 rounded-full text-xs font-black uppercase tracking-wider ${selectedNovel.genre.includes('Romansa') ? 'bg-pink-100 dark:bg-pink-900/30 text-pink-600' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600'}`}>
+              {selectedNovel.genre}
+            </span>
+            <span className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-5 py-2 rounded-full text-xs font-bold">
+              <Clock size={16} /> {selectedNovel.chapters.length} Bab
+            </span>
+            <span className="flex items-center gap-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-500 px-5 py-2 rounded-full text-xs font-bold">
+              <Star size={16} className="fill-yellow-500" /> {selectedNovel.rating} Rating
+            </span>
+          </div>
+          <p className="mb-10 opacity-70 leading-relaxed text-lg italic">
+            "{selectedNovel.description}"
+          </p>
+          <button 
+            onClick={() => startReading(selectedNovel, 0)}
+            className="w-full md:w-max bg-blue-600 hover:bg-blue-700 text-white font-black py-5 px-14 rounded-3xl flex items-center justify-center gap-3 shadow-2xl shadow-blue-500/40 transition-all hover:scale-105 active:scale-95"
+          >
+            <BookOpen size={24} /> BACA SEKARANG
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-12">
+        <h3 className="text-2xl font-black mb-6 flex items-center gap-3">
+          <Menu size={24} className="text-blue-500" /> Daftar Isi
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {selectedNovel.chapters.map((chapter, index) => (
+            <div 
+              key={chapter.id} 
+              onClick={() => startReading(selectedNovel, index)}
+              className={`p-6 rounded-[1.5rem] cursor-pointer border-2 border-transparent transition-all flex justify-between items-center group ${darkMode ? 'bg-gray-800 hover:bg-gray-700 hover:border-blue-500' : 'bg-white shadow-sm hover:bg-blue-50 hover:border-blue-500'}`}
+            >
+              <div className="flex items-center gap-4">
+                <span className="w-10 h-10 flex items-center justify-center bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-full font-black text-sm">
+                  {index + 1}
+                </span>
+                <span className="font-bold text-lg">{chapter.title}</span>
+              </div>
+              <ChevronRight size={20} className="text-gray-400 group-hover:translate-x-1 transition-transform" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const ReaderView = () => {
+    const chapter = selectedNovel.chapters[currentChapterIndex];
+    
+    return (
+      <div className={`min-h-screen transition-colors duration-500 ${darkMode ? 'bg-gray-900 text-gray-300' : 'bg-[#fdf6e3] text-gray-800'}`}>
+        <div className={`sticky top-16 z-40 p-3 flex justify-center items-center gap-6 border-b transition-colors ${darkMode ? 'bg-gray-800/80 backdrop-blur border-gray-700' : 'bg-white/80 backdrop-blur border-gray-200'}`}>
+          <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-full px-4 py-1.5 shadow-inner">
+            <button onClick={() => setFontSize('text-sm')} className="p-1 hover:text-blue-500 font-black">A-</button>
+            <button onClick={() => setFontSize('text-base')} className="p-1 hover:text-blue-500 font-black">A</button>
+            <button onClick={() => setFontSize('text-2xl')} className="p-1 hover:text-blue-500 font-black">A+</button>
+          </div>
+          <button onClick={() => setDarkMode(!darkMode)} className="p-2.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 shadow-sm transition-all active:rotate-180 duration-500">
+            {darkMode ? <Sun size={20} className="text-yellow-400" /> : <Moon size={20} className="text-blue-600" />}
+          </button>
+        </div>
+
+        <div className="max-w-3xl mx-auto p-6 md:p-14 py-16">
+          <div className="text-center mb-16">
+            <p className={`font-black text-sm tracking-[0.3em] uppercase mb-4 ${selectedNovel.genre.includes('Romansa') ? 'text-pink-500' : 'text-blue-500'}`}>
+               {selectedNovel.title}
+            </p>
+            <h2 className={`font-black ${darkMode ? 'text-white' : 'text-gray-900'} text-4xl mb-6`}>
+              {chapter.title}
+            </h2>
+            <div className={`w-24 h-1.5 mx-auto rounded-full opacity-30 ${selectedNovel.genre.includes('Romansa') ? 'bg-pink-500' : 'bg-blue-500'}`}></div>
+          </div>
+
+          <p className={`${fontSize} leading-[2.2] text-justify whitespace-pre-line mb-24 font-medium selection:bg-blue-200 selection:text-black`}>
+            {chapter.content}
+          </p>
+
+          <div className="flex justify-between items-center py-10 border-t border-gray-400/20">
+            <button 
+              disabled={currentChapterIndex === 0}
+              onClick={prevChapter}
+              className={`flex flex-col items-start gap-1 p-2 group ${currentChapterIndex === 0 ? 'opacity-20 cursor-not-allowed' : 'hover:text-blue-500'}`}
+            >
+              <span className="text-[10px] uppercase font-black tracking-widest opacity-40">Sebelumnya</span>
+              <div className="flex items-center gap-1 font-bold"><ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" /> Kembali</div>
+            </button>
+            
+            <div className="text-center px-6 py-2 bg-gray-500/5 rounded-2xl">
+              <div className="font-black text-xl text-blue-500">{currentChapterIndex + 1} / {selectedNovel.chapters.length}</div>
+            </div>
+
+            <button 
+              disabled={currentChapterIndex === selectedNovel.chapters.length - 1}
+              onClick={nextChapter}
+              className={`flex flex-col items-end gap-1 p-2 group ${currentChapterIndex === selectedNovel.chapters.length - 1 ? 'opacity-20 cursor-not-allowed' : 'hover:text-blue-500'}`}
+            >
+              <span className="text-[10px] uppercase font-black tracking-widest opacity-40">Berikutnya</span>
+              <div className="flex items-center gap-1 font-bold">Lanjut <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" /></div>
+            </button>
+          </div>
+          
+          <div className="mt-20 text-center">
+            <button 
+              onClick={() => setView('details')} 
+              className="text-xs font-black uppercase tracking-[0.2em] bg-gray-200 dark:bg-gray-800 px-10 py-5 rounded-[2rem] hover:bg-blue-600 hover:text-white transition-all shadow-xl"
+            >
+              Selesaikan Bacaan
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className={`flex flex-col min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <Navbar />
+      
+      <div className={`fixed inset-0 z-[100] transition-opacity duration-500 ${sidebarOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setSidebarOpen(false)}></div>
+        <div className={`absolute left-0 top-0 h-full w-80 p-8 transition-transform duration-500 shadow-2xl ${darkMode ? 'bg-gray-900 border-r border-gray-800' : 'bg-white'} ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="flex justify-between items-center mb-12">
+            <span className="font-black text-2xl italic">Novel<span className="text-blue-500">Ku</span></span>
+            <button onClick={() => setSidebarOpen(false)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+              <X size={28} />
+            </button>
+          </div>
+          <ul className="space-y-8 font-black text-xl">
+            <li className="flex items-center gap-5 cursor-pointer p-3 rounded-2xl text-blue-500 bg-blue-50 dark:bg-blue-900/20" onClick={() => {setView('library'); setSidebarOpen(false);}}>
+              <Home size={26} /> Perpustakaan
+            </li>
+            <li className="flex items-center gap-5 cursor-pointer p-3 opacity-40 hover:opacity-100">
+              <Bookmark size={26} /> Koleksi Saya
+            </li>
+            <li className="flex items-center gap-5 cursor-pointer p-3 opacity-40 hover:opacity-100">
+              <Search size={26} /> Telusuri
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <main className="flex-1 pb-24 md:pb-12">
+        {view === 'library' && <LibraryView />}
+        {view === 'details' && <DetailView />}
+        {view === 'reader' && <ReaderView />}
+      </main>
+
+      {view === 'library' && (
+        <div className={`md:hidden fixed bottom-6 left-6 right-6 p-4 rounded-[2rem] border shadow-2xl flex justify-around items-center z-40 backdrop-blur-xl ${darkMode ? 'bg-gray-800/90 border-gray-700' : 'bg-white/90 border-gray-200'}`}>
+          <div className="flex flex-col items-center gap-1 text-blue-500">
+            <Home size={22} className="fill-blue-500/20" />
+            <span className="text-[10px] font-black uppercase">Home</span>
+          </div>
+          <div className="flex flex-col items-center gap-1 opacity-25">
+            <Search size={22} />
+            <span className="text-[10px] font-black uppercase">Cari</span>
+          </div>
+          <div className="flex flex-col items-center gap-1 opacity-25">
+            <Bookmark size={22} />
+            <span className="text-[10px] font-black uppercase">Koleksi</span>
+          </div>
+        </div>
+      )}
+
+      {view !== 'reader' && (
+        <footer className={`p-14 text-center border-t transition-colors ${darkMode ? 'bg-gray-900 border-gray-800 text-gray-500' : 'bg-white border-gray-100 text-gray-400'}`}>
+          <p className="text-base font-black tracking-tight mb-2">NovelKu - Masa SMA Penuh Cerita</p>
+          <p className="text-xs font-medium max-w-xs mx-auto opacity-70 leading-relaxed italic">
+            "Membaca kisah masa sekolah yang menginspirasi dan membangun karakter."
+          </p>
+        </footer>
+      )}
+    </div>
+  );
+};
+
+export default App;
